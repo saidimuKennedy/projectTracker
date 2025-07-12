@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  schemas = ["public"]
+}
+
+model Software {
+  id String @id @default(cuid())
+  name String
+  version String
+  developer String
+  stack String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  logs ActivityLog[]
+  comments Comment[]
+  summary Summary?
+  @@schema("public")
+}
+
+model ActivityLog {
+  id String @id @default(cuid())
+  softwareId String
+  actionType ActionType
+  description String?
+  date DateTime @default(now())
+  software Software @relation(fields: [softwareId], references: [id])
+  @@schema("public")
+}
+
+model Comment {
+  id String @id @default(cuid())
+  softwareId String
+  comment String
+  author String?
+  createdAt DateTime @default(now())
+  software Software @relation(fields: [softwareId], references: [id])
+  @@schema("public")
+}
+
+model Summary {
+  id String @id @default(cuid())
+  softwareId String @unique
+  summary String
+  nextSteps String
+  deadline DateTime?
+  software Software @relation(fields: [softwareId], references: [id])
+  @@schema("public")
+}
+
+enum ActionType {
+  added
+  removed
+  updated
+  @@schema("public")
+}
